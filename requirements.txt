@@ -1,0 +1,5 @@
+pandas==2.2.2
+matplotlib==3.8.4
+watchdog==4.0.0
+schedule==1.2.1
+argparse==1.4.0
