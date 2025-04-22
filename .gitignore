@@ -1,1 +1,38 @@
+
+# Python-related
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# Virtual environment
 venv/
+
+# SQLite & databases
+*.db
+
+# Test outputs / reports
+*.csv
+*.pdf
+*.xlsx
+
+# Flask & local web files (optional logs)
+instance/
+*.pid
+
+# IDE/editor junk
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Backup files
+*.bak
+*.tmp
+
+# System & metadata
+.env
+*.tar.gz
+*.zip
