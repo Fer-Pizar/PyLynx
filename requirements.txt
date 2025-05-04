@@ -5,3 +5,4 @@ schedule==1.1.0
 argparse==1.4.0
 Flask==2.0.3
 
+fastapi\nuvicorn
