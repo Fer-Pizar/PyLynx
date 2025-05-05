@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Subir archivo de log</title>
+</head>
+<body>
+    <h1>Subir archivo de log (.log)</h1>
+    <form action="{{ url_for('subir_log') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="archivo_log" accept=".log" required>
+        <button type="submit">Subir</button>
+    </form>
+    <p><a href="{{ url_for('index') }}">← Volver al inicio</a></p>
+</body>
+</html>
+
