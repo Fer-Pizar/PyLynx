@@ -32,7 +32,7 @@ def main():
 
     args = parser.parse_args()
 
-    # 🎯 Handle: charts
+    #  Handle: charts
     if args.command == "charts":
         if args.type == "top-ips":
             print("📥 Loading log data...")
