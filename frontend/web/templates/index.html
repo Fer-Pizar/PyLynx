@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Analizador de Logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #444; }
@@ -17,7 +18,9 @@
     </style>
 </head>
 <body>
-    <h1>Analizador de Logs - Linux</h1>
+    <h1 class="titulo-principal" >Analizador de Logs - Linux</h1>
+	
+	<p><a href="{{ url_for('subir_log') }}">Subir archivo de log</a></p>
 
     <form method="POST">
         <label for="log_tipo">Selecciona el log:</label>
@@ -50,16 +53,16 @@
 
         <div class="resumen">
             <h3>Resumen por tipo:</h3>
-            <ul>
-                <li>Errores: {{ resumen.errores }}</li>
-                <li>Advertencias: {{ resumen.advertencias }}</li>
-                <li>Fallos: {{ resumen.fallos }}</li>
-                <li>Info: {{ resumen.info }}</li>
+              <ul>
+                <li>Errores: {{ resumen['Error'] }}</li>
+                <li>Advertencias: {{ resumen['Advertencia'] }}</li>
+                <li>Fallos: {{ resumen['Fallo'] }}</li>
+                <li>Info: {{ resumen['Info'] }}</li>
             </ul>
 
             <h3>Top IPs más frecuentes:</h3>
             <ul>
-                {% for ip, count in resumen.ip_frecuentes %}
+                {% for ip, count in top_ips %}
                     <li>{{ ip }}: {{ count }} eventos</li>
                 {% endfor %}
             </ul>
@@ -71,5 +74,43 @@
             <button type="submit">Generar reporte PDF (simulado)</button>
         </form>
     {% endif %}
+    <h2>Cargar log histórico</h2>
+	<form action="/subir_log" method="post" enctype="multipart/form-data">
+    	    <input type="file" name="archivo_log" accept=".log">
+    	    <input type="submit" value="Subir y Analizar">
+	</form>
+
+
+<h2>Lectura en Tiempo Real</h2>
+<label for="archivo_real">Seleccionar archivo para monitoreo:</label>
+<select id="archivo_real" onchange="iniciarStream()">
+    <option value="">--Selecciona--</option>
+    {% for key, path in logs_disponibles.items() %}
+        <option value="{{ key }}">{{ key }}</option>
+    {% endfor %}
+</select>
+
+<pre id="log_realtime" style="background: #111; color: #0f0; padding: 10px; height: 200px; overflow-y: scroll;"></pre>
+
+<script>
+let eventSource;
+
+function iniciarStream() {
+    if (eventSource) {
+        eventSource.close();
+    }
+
+    const archivo = document.getElementById("archivo_real").value;
+    if (!archivo) return;
+
+    eventSource = new EventSource(`/stream/${archivo}`);
+    const logDiv = document.getElementById("log_realtime");
+
+    eventSource.onmessage = function(e) {
+        logDiv.textContent += e.data + "\n";
+        logDiv.scrollTop = logDiv.scrollHeight;
+    };
+}
+</script>
 </body>
 </html>
