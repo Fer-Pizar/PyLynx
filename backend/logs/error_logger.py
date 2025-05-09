@@ -5,7 +5,8 @@ ERROR_LOG_PATH = "log_errors.txt"
 
 def log_error(line_number, line_content, reason):
     """
-    Logs a parsing error with line number and reason.
+    Logs a parsing error with line number and reason to be clearer.
+
 
     Parameters:
         line_number (int): The line number in the original log file.
