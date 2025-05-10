@@ -1,50 +1,45 @@
 import re
+from datetime import datetime
 
-def detect_log_type(file):
+def parse_apache_line(line):
     """
-    Inspects the first line of the file to determine its type.
+    Parses an Apache log line.
+    Example: 127.0.0.1 - - [10/Oct/2023:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326
     """
-    sample = file.readline()
-    if "GET" in sample or "POST" in sample:
-        return "apache"
-    elif "FTP" in sample or "vsftpd" in sample or "RETR" in sample or "STOR" in sample:
-        return "ftp"
-    return "unknown"
-
-def parse_log_line(line, log_type):
-    """
-    Parses a single line of a log file based on its type.
-
-    Parameters:
-        line (str): The raw log line.
-        log_type (str): Either 'apache' or 'ftp'.
-
-    Returns:
-        dict | None: Parsed data or None if the line is invalid.
-    """
-    if log_type == "apache":
-        # Example: 127.0.0.1 - - [10/May/2025:13:55:36 +0000] "GET /index.html HTTP/1.1" 200
-        match = re.match(r'(\d+\.\d+\.\d+\.\d+) - - \[(.*?)\] "(\w+) (.*?) HTTP.*" (\d+)', line)
-        if match:
-            return {
-                "ip": match.group(1),
-                "timestamp": match.group(2),
-                "method": match.group(3),
-                "resource": match.group(4),
-                "status": int(match.group(5)),
-                "type": "apache"
-            }
-
-    elif log_type == "ftp":
-        # Example: RETR file.txt by user1 from 192.168.1.5
-        match = re.match(r'(\w+)\s+(.*?)\s+by\s+(.*?)\s+from\s+(\d+\.\d+\.\d+\.\d+)', line)
-        if match:
-            return {
-                "action": match.group(1),
-                "file": match.group(2),
-                "user": match.group(3),
-                "ip": match.group(4),
-                "type": "ftp"
-            }
-
+    pattern = r'(?P<ip>\d{1,3}(?:\.\d{1,3}){3}) .* \[(?P<timestamp>.*?)\] "(?P<method>\w+) (?P<resource>.*?) HTTP.*" (?P<status>\d{3})'
+    match = re.match(pattern, line)
+    if match:
+        return {
+            "ip": match.group("ip"),
+            "timestamp": parse_datetime(match.group("timestamp")),
+            "method": match.group("method"),
+            "resource": match.group("resource"),
+            "status": int(match.group("status"))
+        }
     return None
+
+def parse_ftp_line(line):
+    """
+    Parses a typical FTP log line.
+    Example: Mon Oct 10 14:22:01 2023 [pid 1234] [user] OK LOGIN: Client "192.168.1.2"
+    """
+    pattern = r'(?P<date>\w+ \w+ \d+ \d+:\d+:\d+ \d+).* \[(?P<user>\w+)\].*Client "(?P<ip>\d{1,3}(?:\.\d{1,3}){3})"'
+    match = re.search(pattern, line)
+    if match:
+        return {
+            "timestamp": parse_datetime(match.group("date")),
+            "user": match.group("user"),
+            "ip": match.group("ip"),
+            "action": "LOGIN",  # Simplified for now
+            "status": "OK"
+        }
+    return None
+
+def parse_datetime(dt_str):
+    try:
+        if '/' in dt_str:
+            return datetime.strptime(dt_str, "%d/%b/%Y:%H:%M:%S %z")
+        else:
+            return datetime.strptime(dt_str, "%a %b %d %H:%M:%S %Y")
+    except Exception:
+        return None
